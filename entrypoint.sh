@@ -26,6 +26,9 @@ mkdir -p "$OUTPUT_DIR"
 # Set Python path
 export PYTHONPATH="/app:${PYTHONPATH}"
 
+# Set matplotlib backend for headless environment
+export MPLBACKEND=Agg
+
 # Check if required packages are installed
 echo "Checking dependencies..."
 python -c "import mcp; print('✓ MCP SDK available')" || {
@@ -54,6 +57,15 @@ python -c "import networkx; print('✓ NetworkX available')" || {
 }
 
 echo "All dependencies available ✓"
+
+# Test RDKit functionality
+echo "Testing RDKit functionality..."
+if python test_rdkit_docker.py; then
+    echo "✓ RDKit test passed"
+else
+    echo "✗ RDKit test failed"
+    exit 1
+fi
 
 # Build server arguments
 SERVER_ARGS=(

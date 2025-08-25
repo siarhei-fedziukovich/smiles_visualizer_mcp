@@ -21,6 +21,10 @@ from mcp.types import TextContent, ImageContent
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Configure matplotlib for headless environment
+import matplotlib
+matplotlib.use('Agg')
+
 # Import visualization modules
 try:
     from rdkit import Chem

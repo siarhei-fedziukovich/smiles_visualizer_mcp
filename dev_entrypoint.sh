@@ -17,6 +17,9 @@ mkdir -p "$OUTPUT_DIR"
 # Set Python path for development
 export PYTHONPATH=".:${PYTHONPATH}"
 
+# Set matplotlib backend for headless environment
+export MPLBACKEND=Agg
+
 echo "Development Configuration:"
 echo "  Host: $MCP_HOST"
 echo "  Port: $MCP_PORT"
