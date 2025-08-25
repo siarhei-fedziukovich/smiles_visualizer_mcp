@@ -38,8 +38,8 @@ RUN apt-get update && apt-get install -y \
     libfreetype6 \
     libpng16-16 \
     libjpeg62-turbo \
-    libtiff5 \
-    libwebp6 \
+    libtiff6 \
+    libwebp7 \
     libharfbuzz0b \
     libfribidi0 \
     libexpat1 \
@@ -51,6 +51,7 @@ RUN apt-get update && apt-get install -y \
     libgcc-s1 \
     libstdc++6 \
     libc6 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
