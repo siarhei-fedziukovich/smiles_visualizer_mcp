@@ -1,0 +1,11 @@
+mcp[cli]
+rdkit-pypi
+matplotlib
+seaborn
+plotly
+networkx
+pillow>=7.1.0,<10
+numpy
+pandas
+uvicorn
+fastapi
