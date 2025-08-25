@@ -27,9 +27,9 @@ try:
     from rdkit.Chem import Draw, AllChem, rdMolDescriptors
     from rdkit.Chem.Draw import rdMolDraw2D
     RDKIT_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     RDKIT_AVAILABLE = False
-    logger.warning("RDKit not available. RDKit visualizations will be disabled.")
+    logger.warning("RDKit not available. RDKit visualizations will be disabled. ex: {e}")
 
 try:
     import matplotlib.pyplot as plt
