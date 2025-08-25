@@ -29,7 +29,7 @@ try:
     RDKIT_AVAILABLE = True
 except ImportError as e:
     RDKIT_AVAILABLE = False
-    logger.warning("RDKit not available. RDKit visualizations will be disabled. ex: {e}")
+    logger.warning(f"RDKit not available. RDKit visualizations will be disabled. ex: {e}")
 
 try:
     import matplotlib.pyplot as plt
