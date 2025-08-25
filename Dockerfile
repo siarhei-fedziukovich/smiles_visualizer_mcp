@@ -38,5 +38,9 @@ ENV MCP_PORT=8080
 ENV OUTPUT_DIR=/app/output
 ENV VERBOSE=false
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
 # Use entrypoint script
 ENTRYPOINT ["./entrypoint.sh"]

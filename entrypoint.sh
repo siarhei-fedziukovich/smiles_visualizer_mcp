@@ -87,8 +87,8 @@ if kill -0 "$SERVER_PID" 2>/dev/null; then
     echo "✓ Server started successfully (PID: $SERVER_PID)"
     
     # Health check
-    echo "Performing health check..."
-    if curl -f "http://$MCP_HOST:$MCP_PORT/tools" >/dev/null 2>&1; then
+    echo "Performing health check. query health endpoint..."
+    if curl -f "http://$MCP_HOST:$MCP_PORT/health" >/dev/null 2>&1; then
         echo "✓ Health check passed"
     else
         echo "✗ Health check failed"
@@ -98,7 +98,6 @@ if kill -0 "$SERVER_PID" 2>/dev/null; then
     echo ""
     echo "SMILES Visualizer MCP Server is ready!"
     echo "Available endpoints:"
-    echo "  - Tools: http://$MCP_HOST:$MCP_PORT/tools"
     echo "  - Health: http://$MCP_HOST:$MCP_PORT/health"
     echo ""
     echo "Press Ctrl+C to stop the server"
