@@ -154,6 +154,7 @@ class SMILESVisualizerMCP:
                     )
                 ]
             except Exception as e:
+                logger.error(f"Error in visualize_rdkit for SMILES '{smiles}': {str(e)}", exc_info=True)
                 return [TextContent(text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
@@ -224,6 +225,7 @@ class SMILESVisualizerMCP:
                     )
                 ]
             except Exception as e:
+                logger.error(f"Error in visualize_network for SMILES '{smiles}' with layout '{layout}': {str(e)}", exc_info=True)
                 return [TextContent(text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
@@ -334,6 +336,7 @@ class SMILESVisualizerMCP:
                     TextContent(text=html_content)
                 ]
             except Exception as e:
+                logger.error(f"Error in visualize_plotly for SMILES '{smiles}': {str(e)}", exc_info=True)
                 return [TextContent(text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
@@ -413,6 +416,7 @@ class SMILESVisualizerMCP:
                     )
                 ]
             except Exception as e:
+                logger.error(f"Error in visualize_custom_matplotlib for SMILES '{smiles}': {str(e)}", exc_info=True)
                 return [TextContent(text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
@@ -445,6 +449,7 @@ class SMILESVisualizerMCP:
                     content_items.append(TextContent(text=f"\n--- {viz_type.upper()} VISUALIZATION ---"))
                     content_items.extend(result)
                 except Exception as e:
+                    logger.error(f"Error in compare_visualizations for {viz_type} visualization of SMILES '{smiles}': {str(e)}", exc_info=True)
                     content_items.append(TextContent(text=f"\n--- {viz_type.upper()} VISUALIZATION (ERROR) ---"))
                     content_items.append(TextContent(text=f"Error: {str(e)}"))
             
@@ -476,6 +481,7 @@ class SMILESVisualizerMCP:
                     content_items.append(TextContent(text=f"\n--- MOLECULE {i+1}: {smiles} ---"))
                     content_items.extend(result)
                 except Exception as e:
+                    logger.error(f"Error in batch_visualize for molecule {i+1} with SMILES '{smiles}' using {visualization_type}: {str(e)}", exc_info=True)
                     content_items.append(TextContent(text=f"\n--- MOLECULE {i+1}: {smiles} (ERROR) ---"))
                     content_items.append(TextContent(text=f"Error: {str(e)}"))
             
