@@ -125,15 +125,15 @@ class SMILESVisualizerMCP:
                 return json.dumps({"error": str(e)})
 
         @self.mcp.tool()
-        async def visualize_rdkit(smiles: str, size: str = "400,300") -> list:
+        async def visualize_rdkit(smiles: str, size: str = "200,200") -> list:
             """Create RDKit 2D molecular visualization and return as image content"""
             if not RDKIT_AVAILABLE:
-                return [TextContent(text="RDKit is required for this visualization")]
+                return [TextContent(type="text", text="RDKit is required for this visualization")]
             
             try:
                 mol = Chem.MolFromSmiles(smiles)
                 if mol is None:
-                    return [TextContent(text=f"Invalid SMILES string: {smiles}")]
+                    return [TextContent(type="text", text=f"Invalid SMILES string: {smiles}")]
                 
                 # Parse size
                 width, height = map(int, size.split(','))
@@ -147,26 +147,27 @@ class SMILESVisualizerMCP:
                 img_base64 = base64.b64encode(buffer.getvalue()).decode()
                 
                 return [
-                    TextContent(text=f"RDKit visualization for {smiles} ({width}x{height})"),
+                    TextContent(type="text", text=f"RDKit visualization for {smiles} ({width}x{height})"),
                     ImageContent(
+                        type="image",
                         data=img_base64,
                         mimeType="image/png"
                     )
                 ]
             except Exception as e:
                 logger.error(f"Error in visualize_rdkit for SMILES '{smiles}': {str(e)}", exc_info=True)
-                return [TextContent(text=f"Error: {str(e)}")]
+                return [TextContent(type="text", text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
         async def visualize_network(smiles: str, layout: str = "spring") -> list:
             """Create network graph visualization of molecular structure"""
             if not NETWORKX_AVAILABLE or not RDKIT_AVAILABLE:
-                return [TextContent(text="NetworkX and RDKit are required for this visualization")]
+                return [TextContent(type="text", text="NetworkX and RDKit are required for this visualization")]
             
             try:
                 mol = Chem.MolFromSmiles(smiles)
                 if mol is None:
-                    return [TextContent(text=f"Invalid SMILES string: {smiles}")]
+                    return [TextContent(type="text", text=f"Invalid SMILES string: {smiles}")]
                 
                 # Create graph
                 G = nx.Graph()
@@ -218,26 +219,27 @@ class SMILESVisualizerMCP:
                 img_base64 = base64.b64encode(buffer.getvalue()).decode()
                 
                 return [
-                    TextContent(text=f"Network visualization for {smiles} ({layout} layout, {G.number_of_nodes()} nodes, {G.number_of_edges()} edges)"),
+                    TextContent(type="text", text=f"Network visualization for {smiles} ({layout} layout, {G.number_of_nodes()} nodes, {G.number_of_edges()} edges)"),
                     ImageContent(
+                        type="image",
                         data=img_base64,
                         mimeType="image/png"
                     )
                 ]
             except Exception as e:
                 logger.error(f"Error in visualize_network for SMILES '{smiles}' with layout '{layout}': {str(e)}", exc_info=True)
-                return [TextContent(text=f"Error: {str(e)}")]
+                return [TextContent(type="text", text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
-        async def visualize_plotly(smiles: str) -> list:
-            """Create interactive Plotly visualization and return as HTML"""
+        async def visualize_plotly(smiles: str, output_format: str = "html") -> list:
+            """Create interactive Plotly visualization and return as HTML or JSON"""
             if not PLOTLY_AVAILABLE or not RDKIT_AVAILABLE:
-                return [TextContent(text="Plotly and RDKit are required for this visualization")]
+                return [TextContent(type="text", text="Plotly and RDKit are required for this visualization")]
             
             try:
                 mol = Chem.MolFromSmiles(smiles)
                 if mol is None:
-                    return [TextContent(text=f"Invalid SMILES string: {smiles}")]
+                    return [TextContent(type="text", text=f"Invalid SMILES string: {smiles}")]
                 
                 mol_info = json.loads(await get_molecular_info(smiles))
                 
@@ -328,27 +330,35 @@ class SMILESVisualizerMCP:
                     showlegend=True
                 )
                 
-                # Convert to HTML
-                html_content = fig.to_html(include_plotlyjs=True, full_html=True)
-                
-                return [
-                    TextContent(text=f"Interactive Plotly visualization for {smiles}"),
-                    TextContent(text=html_content)
-                ]
+                # Convert to requested format
+                if output_format.lower() == "json":
+                    # Return as JSON data
+                    plotly_json = fig.to_json()
+                    return [
+                        TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (JSON format)"),
+                        TextContent(type="text", text=plotly_json)
+                    ]
+                else:
+                    # Default to HTML format
+                    html_content = fig.to_html(include_plotlyjs=True, full_html=True)
+                    return [
+                        TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (HTML format)"),
+                        TextContent(type="text", text=html_content)
+                    ]
             except Exception as e:
                 logger.error(f"Error in visualize_plotly for SMILES '{smiles}': {str(e)}", exc_info=True)
-                return [TextContent(text=f"Error: {str(e)}")]
+                return [TextContent(type="text", text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
         async def visualize_custom_matplotlib(smiles: str) -> list:
             """Create custom matplotlib visualization with molecular properties"""
             if not MATPLOTLIB_AVAILABLE or not RDKIT_AVAILABLE:
-                return [TextContent(text="Matplotlib and RDKit are required for this visualization")]
+                return [TextContent(type="text", text="Matplotlib and RDKit are required for this visualization")]
             
             try:
                 mol = Chem.MolFromSmiles(smiles)
                 if mol is None:
-                    return [TextContent(text=f"Invalid SMILES string: {smiles}")]
+                    return [TextContent(type="text", text=f"Invalid SMILES string: {smiles}")]
                 
                 mol_info = json.loads(await get_molecular_info(smiles))
                 
@@ -409,23 +419,24 @@ class SMILESVisualizerMCP:
                 img_base64 = base64.b64encode(buffer.getvalue()).decode()
                 
                 return [
-                    TextContent(text=f"Custom matplotlib visualization for {smiles}"),
+                    TextContent(type="text", text=f"Custom matplotlib visualization for {smiles}"),
                     ImageContent(
+                        type="image",
                         data=img_base64,
                         mimeType="image/png"
                     )
                 ]
             except Exception as e:
                 logger.error(f"Error in visualize_custom_matplotlib for SMILES '{smiles}': {str(e)}", exc_info=True)
-                return [TextContent(text=f"Error: {str(e)}")]
+                return [TextContent(type="text", text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
-        async def compare_visualizations(smiles: str) -> list:
+        async def compare_visualizations(smiles: str, plotly_format: str = "html") -> list:
             """Generate all visualization types for comparison"""
             # Validate SMILES first
             validation = json.loads(await validate_smiles(smiles))
             if not validation.get("valid", False):
-                return [TextContent(text=f"Invalid SMILES: {smiles}")]
+                return [TextContent(type="text", text=f"Invalid SMILES: {smiles}")]
             
             # Get molecular info
             mol_info = json.loads(await get_molecular_info(smiles))
@@ -439,30 +450,33 @@ class SMILESVisualizerMCP:
             ]
             
             content_items = [
-                TextContent(text=f"Comparison of visualization types for {smiles}"),
-                TextContent(text=f"Molecular Info: {json.dumps(mol_info, indent=2)}")
+                TextContent(type="text", text=f"Comparison of visualization types for {smiles}"),
+                TextContent(type="text", text=f"Molecular Info: {json.dumps(mol_info, indent=2)}")
             ]
             
             for viz_type, method in viz_methods:
                 try:
-                    result = await method(smiles)
-                    content_items.append(TextContent(text=f"\n--- {viz_type.upper()} VISUALIZATION ---"))
+                    if viz_type == "plotly":
+                        result = await method(smiles, plotly_format)
+                    else:
+                        result = await method(smiles)
+                    content_items.append(TextContent(type="text", text=f"\n--- {viz_type.upper()} VISUALIZATION ---"))
                     content_items.extend(result)
                 except Exception as e:
                     logger.error(f"Error in compare_visualizations for {viz_type} visualization of SMILES '{smiles}': {str(e)}", exc_info=True)
-                    content_items.append(TextContent(text=f"\n--- {viz_type.upper()} VISUALIZATION (ERROR) ---"))
-                    content_items.append(TextContent(text=f"Error: {str(e)}"))
+                    content_items.append(TextContent(type="text", text=f"\n--- {viz_type.upper()} VISUALIZATION (ERROR) ---"))
+                    content_items.append(TextContent(type="text", text=f"Error: {str(e)}"))
             
             return content_items
 
         @self.mcp.tool()
-        async def batch_visualize(smiles_list: List[str], visualization_type: str = "rdkit") -> list:
+        async def batch_visualize(smiles_list: List[str], visualization_type: str = "rdkit", plotly_format: str = "html") -> list:
             """Generate visualizations for multiple SMILES strings"""
             if not smiles_list:
-                return [TextContent(text="No SMILES strings provided")]
+                return [TextContent(type="text", text="No SMILES strings provided")]
             
             content_items = [
-                TextContent(text=f"Batch visualization of {len(smiles_list)} molecules using {visualization_type}")
+                TextContent(type="text", text=f"Batch visualization of {len(smiles_list)} molecules using {visualization_type}")
             ]
             
             for i, smiles in enumerate(smiles_list):
@@ -472,18 +486,18 @@ class SMILESVisualizerMCP:
                     elif visualization_type == "network":
                         result = await visualize_network(smiles)
                     elif visualization_type == "plotly":
-                        result = await visualize_plotly(smiles)
+                        result = await visualize_plotly(smiles, plotly_format)
                     elif visualization_type == "custom_matplotlib":
                         result = await visualize_custom_matplotlib(smiles)
                     else:
-                        return [TextContent(text=f"Unknown visualization type: {visualization_type}")]
+                        return [TextContent(type="text", text=f"Unknown visualization type: {visualization_type}")]
                     
-                    content_items.append(TextContent(text=f"\n--- MOLECULE {i+1}: {smiles} ---"))
+                    content_items.append(TextContent(type="text", text=f"\n--- MOLECULE {i+1}: {smiles} ---"))
                     content_items.extend(result)
                 except Exception as e:
                     logger.error(f"Error in batch_visualize for molecule {i+1} with SMILES '{smiles}' using {visualization_type}: {str(e)}", exc_info=True)
-                    content_items.append(TextContent(text=f"\n--- MOLECULE {i+1}: {smiles} (ERROR) ---"))
-                    content_items.append(TextContent(text=f"Error: {str(e)}"))
+                    content_items.append(TextContent(type="text", text=f"\n--- MOLECULE {i+1}: {smiles} (ERROR) ---"))
+                    content_items.append(TextContent(type="text", text=f"Error: {str(e)}"))
             
             return content_items
 

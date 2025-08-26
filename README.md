@@ -182,17 +182,25 @@ result = await visualize_network("CCO", layout="spring")
 ### Create Interactive Plotly Visualization
 
 ```python
-# Create interactive visualization
+# Create interactive visualization (HTML format)
 result = await visualize_plotly("CCO")
 # Returns HTML content for interactive chart
+
+# Create interactive visualization (JSON format)
+result = await visualize_plotly("CCO", output_format="json")
+# Returns JSON data for programmatic use
 ```
 
 ### Compare All Visualizations
 
 ```python
-# Generate all visualization types
+# Generate all visualization types (HTML format for Plotly)
 results = await compare_visualizations("CCO")
 # Returns all visualization types and molecular info
+
+# Generate all visualization types (JSON format for Plotly)
+results = await compare_visualizations("CCO", plotly_format="json")
+# Returns all visualization types with JSON format for Plotly
 ```
 
 ### Batch Processing
@@ -202,6 +210,10 @@ results = await compare_visualizations("CCO")
 smiles_list = ["CCO", "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]
 results = await batch_visualize(smiles_list, visualization_type="rdkit")
 # Returns visualizations for all molecules
+
+# Process multiple molecules with Plotly JSON format
+results = await batch_visualize(smiles_list, visualization_type="plotly", plotly_format="json")
+# Returns Plotly visualizations in JSON format for all molecules
 ```
 
 ## Example Molecules
@@ -248,8 +260,9 @@ Add the server to your MCP client configuration:
 - **Usage**: Can be embedded in HTML, displayed in applications, or saved to files
 
 ### Interactive Visualizations
-- **Format**: HTML (Plotly)
+- **Format**: HTML (Plotly) or JSON (Plotly)
 - **Features**: Zoom, pan, hover information, interactive elements
+- **JSON Format**: Raw Plotly figure data for programmatic use
 
 ### Data
 - **Format**: JSON
