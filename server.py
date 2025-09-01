@@ -331,12 +331,15 @@ class SMILESVisualizerMCP:
                 )
                 
                 # Return as JSON data
+                import base64
+
                 plotly_json = fig.to_json()
+                plotly_json_b64 = base64.b64encode(plotly_json.encode("utf-8")).decode("utf-8")
                 return [
                     TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (JSON format)"),
                     ImageContent(
                         type="image",
-                        data=plotly_json,
+                        data=plotly_json_b64,
                         mimeType="application/vnd.plotly.v1+json"
                     )
                 ]
