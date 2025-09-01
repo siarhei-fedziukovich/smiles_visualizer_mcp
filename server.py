@@ -231,8 +231,8 @@ class SMILESVisualizerMCP:
                 return [TextContent(type="text", text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
-        async def visualize_plotly(smiles: str, output_format: str = "html") -> list:
-            """Create interactive Plotly visualization and return as HTML or JSON"""
+        async def visualize_plotly(smiles: str) -> list:
+            """Create interactive Plotly visualization and return as JSON"""
             if not PLOTLY_AVAILABLE or not RDKIT_AVAILABLE:
                 return [TextContent(type="text", text="Plotly and RDKit are required for this visualization")]
             
@@ -330,21 +330,16 @@ class SMILESVisualizerMCP:
                     showlegend=True
                 )
                 
-                # Convert to requested format
-                if output_format.lower() == "json":
-                    # Return as JSON data
-                    plotly_json = fig.to_json()
-                    return [
-                        TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (JSON format)"),
-                        TextContent(type="text", text=plotly_json)
-                    ]
-                else:
-                    # Default to HTML format
-                    html_content = fig.to_html(include_plotlyjs=True, full_html=True)
-                    return [
-                        TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (HTML format)"),
-                        TextContent(type="text", text=html_content)
-                    ]
+                # Return as JSON data
+                plotly_json = fig.to_json()
+                return [
+                    TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (JSON format)"),
+                    ImageContent(
+                        type="image",
+                        data=plotly_json,
+                        mimeType="application/vnd.plotly.v1+json"
+                    )
+                ]
             except Exception as e:
                 logger.error(f"Error in visualize_plotly for SMILES '{smiles}': {str(e)}", exc_info=True)
                 return [TextContent(type="text", text=f"Error: {str(e)}")]
