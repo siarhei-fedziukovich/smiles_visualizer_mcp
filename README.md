@@ -24,6 +24,13 @@ A Model Context Protocol (MCP) server for molecular visualization using SMILES (
 7. **`compare_visualizations`** - Generate all visualization types for comparison
 8. **`batch_visualize`** - Process multiple SMILES strings
 
+### Debug/Development Tools
+
+9. **`store_plotly_json`** - Store Plotly JSON visualizations for debugging/development
+10. **`get_stored_plotly_json`** - Retrieve stored Plotly JSON with optional base64 encoding
+11. **`list_stored_plotly_keys`** - List all stored Plotly JSON keys
+12. **`clear_stored_plotly_data`** - Clear all stored Plotly JSON data
+
 ### Molecular Properties
 
 The server calculates various molecular properties including:
@@ -34,6 +41,36 @@ The server calculates various molecular properties including:
 - Topological polar surface area (TPSA)
 - Number of rotatable bonds
 - Hydrogen bond donors/acceptors
+
+### Debug/Development Tools Usage
+
+The debug tools are designed for development and testing purposes:
+
+#### `store_plotly_json`
+- **Purpose**: Store Plotly JSON visualizations for later retrieval
+- **Parameters**: 
+  - `smiles`: SMILES string as identifier
+  - `plotly_json`: JSON string containing Plotly figure data
+  - `encode_base64`: Boolean to control base64 encoding (default: True)
+- **Use Case**: Store generated visualizations for debugging or batch processing
+
+#### `get_stored_plotly_json`
+- **Purpose**: Retrieve stored Plotly JSON visualizations
+- **Parameters**:
+  - `smiles`: SMILES string identifier
+  - `encode_base64`: Boolean to control output format (default: True)
+- **Returns**: 
+  - When `encode_base64=True`: ImageContent with `application/vnd.plotly.v1+json` mimetype
+  - When `encode_base64=False`: TextContent with raw JSON data
+- **Use Case**: Retrieve stored visualizations for display or further processing
+
+#### `list_stored_plotly_keys`
+- **Purpose**: List all stored Plotly JSON identifiers
+- **Use Case**: Check what visualizations are available in storage
+
+#### `clear_stored_plotly_data`
+- **Purpose**: Clear all stored Plotly JSON data
+- **Use Case**: Reset storage for testing or cleanup
 
 ## Installation
 

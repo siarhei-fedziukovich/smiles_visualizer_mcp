@@ -72,6 +72,8 @@ class SMILESVisualizerMCP:
         self.mcp = FastMCP("SMILES Visualizer")
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        # Storage for plotly JSON data (debug/dev purpose)
+        self.stored_plotly_data = {}
         self.setup_tools()
     
     def setup_tools(self):
@@ -498,6 +500,64 @@ class SMILESVisualizerMCP:
                     content_items.append(TextContent(type="text", text=f"Error: {str(e)}"))
             
             return content_items
+
+        # Debug/Development tools
+        @self.mcp.tool()
+        async def store_plotly_json(smiles: str, plotly_json: str, encode_base64: bool = True) -> str:
+            """Store a Plotly JSON visualization for a SMILES string (debug/dev purpose)"""
+            try:
+                if encode_base64:
+                    # Encode the JSON string to base64
+                    plotly_json_b64 = base64.b64encode(plotly_json.encode("utf-8")).decode("utf-8")
+                    self.stored_plotly_data[smiles] = plotly_json_b64
+                else:
+                    # Store the JSON string directly
+                    self.stored_plotly_data[smiles] = plotly_json
+                
+                return json.dumps({
+                    "message": f"Plotly JSON for {smiles} stored successfully.",
+                    "encoded": encode_base64,
+                    "stored_keys": list(self.stored_plotly_data.keys())
+                })
+            except Exception as e:
+                return json.dumps({"error": f"Failed to store Plotly JSON: {str(e)}"})
+
+        @self.mcp.tool()
+        async def get_stored_plotly_json(smiles: str) -> list:
+            """Retrieve a stored Plotly JSON visualization for a SMILES string (debug/dev purpose)"""
+            if smiles not in self.stored_plotly_data:
+                return [TextContent(type="text", text=f"No stored Plotly JSON found for {smiles}")]
+            
+            try:
+                stored_data = self.stored_plotly_data[smiles]
+                
+                return [
+                        TextContent(type="text", text=f"Retrieved stored Plotly JSON for {smiles}"),
+                        ImageContent(
+                            type="image",
+                            data=stored_data,
+                            mimeType="application/vnd.plotly.v1+json"
+                        )
+                    ]
+            except Exception as e:
+                return [TextContent(type="text", text=f"Error retrieving stored Plotly JSON: {str(e)}")]
+
+        @self.mcp.tool()
+        async def list_stored_plotly_keys() -> str:
+            """List all stored Plotly JSON keys (debug/dev purpose)"""
+            return json.dumps({
+                "stored_keys": list(self.stored_plotly_data.keys()),
+                "count": len(self.stored_plotly_data)
+            })
+
+        @self.mcp.tool()
+        async def clear_stored_plotly_data() -> str:
+            """Clear all stored Plotly JSON data (debug/dev purpose)"""
+            count = len(self.stored_plotly_data)
+            self.stored_plotly_data.clear()
+            return json.dumps({
+                "message": f"Cleared {count} stored Plotly JSON entries"
+            })
 
 async def run_http_streamable_server(smiles_server: SMILESVisualizerMCP, host: str, port: int):
     """Run the MCP server using HTTP Streamable transport"""
