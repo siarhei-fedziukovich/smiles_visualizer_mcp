@@ -30,6 +30,7 @@ A Model Context Protocol (MCP) server for molecular visualization using SMILES (
 10. **`get_stored_plotly_json`** - Retrieve stored Plotly JSON with optional base64 encoding
 11. **`list_stored_plotly_keys`** - List all stored Plotly JSON keys
 12. **`clear_stored_plotly_data`** - Clear all stored Plotly JSON data
+13. **`convert_to_image`** - Convert any content to ImageContent with specified mime type and encoding
 
 ### Molecular Properties
 
@@ -71,6 +72,17 @@ The debug tools are designed for development and testing purposes:
 #### `clear_stored_plotly_data`
 - **Purpose**: Clear all stored Plotly JSON data
 - **Use Case**: Reset storage for testing or cleanup
+
+#### `convert_to_image`
+- **Purpose**: Convert any content to ImageContent with specified mime type and encoding
+- **Parameters**:
+  - `content`: String content to convert (required)
+  - `mime_type`: MIME type for the ImageContent (default: "smiles_seq")
+  - `encode_base64`: Boolean to control base64 encoding (default: True)
+- **Returns**: 
+  - When `encode_base64=True`: ImageContent with base64 encoded data
+  - When `encode_base64=False`: ImageContent with plain text data
+- **Use Case**: Convert any text content (SMILES, JSON, etc.) to ImageContent format for consistent handling
 
 ## Installation
 
@@ -219,25 +231,25 @@ result = await visualize_network("CCO", layout="spring")
 ### Create Interactive Plotly Visualization
 
 ```python
-# Create interactive visualization (HTML format)
+# Create interactive visualization (base64 encoded JSON)
 result = await visualize_plotly("CCO")
-# Returns HTML content for interactive chart
+# Returns base64 encoded JSON data as ImageContent
 
-# Create interactive visualization (JSON format)
-result = await visualize_plotly("CCO", output_format="json")
-# Returns JSON data for programmatic use
+# Create interactive visualization (plain text JSON)
+result = await visualize_plotly("CCO", encode_base64=False)
+# Returns plain text JSON data as TextContent
 ```
 
 ### Compare All Visualizations
 
 ```python
-# Generate all visualization types (HTML format for Plotly)
+# Generate all visualization types (base64 encoded Plotly JSON)
 results = await compare_visualizations("CCO")
 # Returns all visualization types and molecular info
 
-# Generate all visualization types (JSON format for Plotly)
-results = await compare_visualizations("CCO", plotly_format="json")
-# Returns all visualization types with JSON format for Plotly
+# Generate all visualization types (plain text Plotly JSON)
+results = await compare_visualizations("CCO", encode_base64=False)
+# Returns all visualization types with plain text JSON for Plotly
 ```
 
 ### Batch Processing
@@ -248,9 +260,22 @@ smiles_list = ["CCO", "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O", "CN1C=NC2=C1C(=O)N(C(=O)N
 results = await batch_visualize(smiles_list, visualization_type="rdkit")
 # Returns visualizations for all molecules
 
-# Process multiple molecules with Plotly JSON format
-results = await batch_visualize(smiles_list, visualization_type="plotly", plotly_format="json")
-# Returns Plotly visualizations in JSON format for all molecules
+# Process multiple molecules with Plotly (plain text JSON)
+results = await batch_visualize(smiles_list, visualization_type="plotly", encode_base64=False)
+# Returns Plotly visualizations in plain text JSON format for all molecules
+```
+
+### Convert Content to ImageContent
+
+```python
+# Convert SMILES string to ImageContent (base64 encoded)
+result = await convert_to_image("CCO", mime_type="smiles_seq")
+# Returns ImageContent with base64 encoded SMILES data
+
+# Convert JSON data to ImageContent (plain text)
+json_data = '{"molecule": "CCO", "weight": 46.07}'
+result = await convert_to_image(json_data, mime_type="application/json", encode_base64=False)
+# Returns ImageContent with plain text JSON data
 ```
 
 ## Example Molecules
@@ -297,9 +322,10 @@ Add the server to your MCP client configuration:
 - **Usage**: Can be embedded in HTML, displayed in applications, or saved to files
 
 ### Interactive Visualizations
-- **Format**: HTML (Plotly) or JSON (Plotly)
+- **Format**: JSON (Plotly)
 - **Features**: Zoom, pan, hover information, interactive elements
-- **JSON Format**: Raw Plotly figure data for programmatic use
+- **Base64 Encoded**: Returns as ImageContent with `application/vnd.plotly.v1+json` mimetype
+- **Plain Text**: Returns as TextContent with raw Plotly figure data for programmatic use
 
 ### Data
 - **Format**: JSON

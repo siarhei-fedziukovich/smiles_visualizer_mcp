@@ -233,7 +233,7 @@ class SMILESVisualizerMCP:
                 return [TextContent(type="text", text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
-        async def visualize_plotly(smiles: str) -> list:
+        async def visualize_plotly(smiles: str, encode_base64: bool = True) -> list:
             """Create interactive Plotly visualization and return as JSON"""
             if not PLOTLY_AVAILABLE or not RDKIT_AVAILABLE:
                 return [TextContent(type="text", text="Plotly and RDKit are required for this visualization")]
@@ -333,18 +333,26 @@ class SMILESVisualizerMCP:
                 )
                 
                 # Return as JSON data
-                import base64
-
                 plotly_json = fig.to_json()
-                plotly_json_b64 = base64.b64encode(plotly_json.encode("utf-8")).decode("utf-8")
-                return [
-                    TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (JSON format)"),
-                    ImageContent(
-                        type="image",
-                        data=plotly_json_b64,
-                        mimeType="application/vnd.plotly.v1+json"
-                    )
-                ]
+                
+                if encode_base64:
+                    # Encode as base64
+                    plotly_data = base64.b64encode(plotly_json.encode("utf-8")).decode("utf-8")
+                    return [
+                        TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (JSON format, base64 encoded)"),
+                        ImageContent(
+                            type="image",
+                            data=plotly_data,
+                            mimeType="application/vnd.plotly.v1+json"
+                        )
+                    ]
+                else:
+                    # Return as plain text
+                    return [
+                        TextContent(type="text", text=f"Interactive Plotly visualization for {smiles} (JSON format, plain text)"),
+                        ImageContent(type="image", data=plotly_json,
+                            mimeType="application/vnd.plotly.v1+json")
+                    ]
             except Exception as e:
                 logger.error(f"Error in visualize_plotly for SMILES '{smiles}': {str(e)}", exc_info=True)
                 return [TextContent(type="text", text=f"Error: {str(e)}")]
@@ -431,7 +439,7 @@ class SMILESVisualizerMCP:
                 return [TextContent(type="text", text=f"Error: {str(e)}")]
 
         @self.mcp.tool()
-        async def compare_visualizations(smiles: str, plotly_format: str = "html") -> list:
+        async def compare_visualizations(smiles: str, plotly_format: str = "html", encode_base64: bool = True) -> list:
             """Generate all visualization types for comparison"""
             # Validate SMILES first
             validation = json.loads(await validate_smiles(smiles))
@@ -457,7 +465,7 @@ class SMILESVisualizerMCP:
             for viz_type, method in viz_methods:
                 try:
                     if viz_type == "plotly":
-                        result = await method(smiles, plotly_format)
+                        result = await method(smiles, encode_base64)
                     else:
                         result = await method(smiles)
                     content_items.append(TextContent(type="text", text=f"\n--- {viz_type.upper()} VISUALIZATION ---"))
@@ -470,7 +478,7 @@ class SMILESVisualizerMCP:
             return content_items
 
         @self.mcp.tool()
-        async def batch_visualize(smiles_list: List[str], visualization_type: str = "rdkit", plotly_format: str = "html") -> list:
+        async def batch_visualize(smiles_list: List[str], visualization_type: str = "rdkit", plotly_format: str = "html", encode_base64: bool = True) -> list:
             """Generate visualizations for multiple SMILES strings"""
             if not smiles_list:
                 return [TextContent(type="text", text="No SMILES strings provided")]
@@ -486,7 +494,7 @@ class SMILESVisualizerMCP:
                     elif visualization_type == "network":
                         result = await visualize_network(smiles)
                     elif visualization_type == "plotly":
-                        result = await visualize_plotly(smiles, plotly_format)
+                        result = await visualize_plotly(smiles, encode_base64)
                     elif visualization_type == "custom_matplotlib":
                         result = await visualize_custom_matplotlib(smiles)
                     else:
@@ -558,6 +566,35 @@ class SMILESVisualizerMCP:
             return json.dumps({
                 "message": f"Cleared {count} stored Plotly JSON entries"
             })
+
+        @self.mcp.tool()
+        async def convert_to_image(content: str, mime_type: str = "smiles_seq", encode_base64: bool = True) -> list:
+            """Convert content to ImageContent with specified mime type and encoding"""
+            try:
+                if encode_base64:
+                    # Encode content to base64
+                    content_data = base64.b64encode(content.encode("utf-8")).decode("utf-8")
+                    return [
+                        TextContent(type="text", text=f"Content converted to ImageContent (base64 encoded, mime_type: {mime_type})"),
+                        ImageContent(
+                            type="image",
+                            data=content_data,
+                            mimeType=mime_type
+                        )
+                    ]
+                else:
+                    # Return as plain text data
+                    return [
+                        TextContent(type="text", text=f"Content converted to ImageContent (plain text, mime_type: {mime_type})"),
+                        ImageContent(
+                            type="image",
+                            data=content,
+                            mimeType=mime_type
+                        )
+                    ]
+            except Exception as e:
+                logger.error(f"Error in convert_to_image: {str(e)}", exc_info=True)
+                return [TextContent(type="text", text=f"Error: {str(e)}")]
 
 async def run_http_streamable_server(smiles_server: SMILESVisualizerMCP, host: str, port: int):
     """Run the MCP server using HTTP Streamable transport"""
